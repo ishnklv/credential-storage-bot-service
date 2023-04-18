@@ -1,3 +1,4 @@
+import datetime
 import tracemalloc
 from aiogram import Bot, Dispatcher, types, executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -39,8 +40,9 @@ async def cmd_start(message: types.Message):
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
     button1 = KeyboardButton('/create_credential')
     button2 = KeyboardButton('/get_credential')
-    button3 = KeyboardButton('/help')
-    keyboard.add(button1, button2, button3)
+    button3 = KeyboardButton('/list_credentials')
+    button4 = KeyboardButton('/help')
+    keyboard.add(button1, button2, button3, button4)
 
     # отправляем сообщение пользователю
     await message.answer("Hello! What do you want to do?", reply_markup=keyboard)
@@ -52,7 +54,9 @@ async def cmd_start(message: types.Message):
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
     button1 = KeyboardButton('/create_credential')
     button2 = KeyboardButton('/get_credential')
-    keyboard.add(button1, button2)
+    button3 = KeyboardButton('/list_credentials')
+    button4 = KeyboardButton('/help')
+    keyboard.add(button1, button2, button3, button4)
 
     # отправляем сообщение пользователю
     await message.answer("Commands List:", reply_markup=keyboard)
@@ -68,6 +72,31 @@ async def create_credential(message: types.Message):
 async def get_credential(message: types.Message):
     await GetCredentialForm.waiting_for_service_name.set()
     await message.answer("Enter service name:")
+
+
+@dp.message_handler(Command("list_credentials"))
+async def list_credentials(message: types.Message):
+    user_id = message.from_user.id
+
+    query = {
+        'telegram_user_id': user_id,
+    }
+
+    items = credential_model.find(query)
+
+    message_text = ""
+    for dictionary in items:
+        if "created_at" in dictionary:
+            created_date = datetime.strptime(dictionary["created_at"], "%Y-%m-%d")
+            message_text += f"Service name: {dictionary['service_name']}\nLogin: {dictionary['login']}\nPassword: {dictionary['password']}\nCreated Date: {created_date.strftime('%d.%m.%Y')}\n\n"
+        else:
+            message_text += f"Service name: {dictionary['service_name']}\nLogin: {dictionary['login']}\nPassword: {dictionary['password']}\nCreated Date: {datetime.datetime.now().strftime('%d.%m.%Y')}\n\n"
+
+    await message.answer(message_text)
+
+    count = credential_model.count(query)
+
+    await message.answer(f"Counts: {count}")
 
 
 @dp.message_handler(state=GetCredentialForm.waiting_for_service_name)
@@ -138,6 +167,9 @@ def save_credential(data, user_id):
         'login': data['login'],
         'password': data['password'],
         'telegram_user_id': user_id,
+        'is_deleted': False,
+        'created_at': datetime.datetime.now(),
+        'updated_at': datetime.datetime.now(),
     }
 
     credential_model.create(credential)

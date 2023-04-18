@@ -33,3 +33,11 @@ class Orm:
         instance = self._collection.find_one(query)
 
         return instance
+
+    def find(self, query, skip=0, limit=20):
+        cursor = self._collection.find(query).skip(skip).limit(limit)
+
+        return list(cursor)
+
+    def count(self, query):
+        return self._collection.count_documents(query)
