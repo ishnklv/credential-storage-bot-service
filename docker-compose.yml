@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  bot:
+    build: .
+    environment:
+      - MONGODB_HOST=mongo
+      - MONGODB_PORT=27017
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - mongo
+      - redis
+    volumes:
+      - .env:/app/.env
+    restart: always
+
+  mongo:
+    image: mongo:latest
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+
+  redis:
+    image: redis:latest
+    volumes:
+      - redis-data:/data
+    restart: always
+
+volumes:
+  mongo-data:
+  redis-data:

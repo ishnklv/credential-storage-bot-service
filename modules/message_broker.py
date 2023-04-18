@@ -1,7 +1,7 @@
 import json
 from redis import Redis
 
-from config import REDIS_CONFIG, MESSAGE_BROKER_CONFIG
+from settings.config import REDIS_CONFIG, MESSAGE_BROKER_CONFIG
 
 redis_client = Redis(
     host=REDIS_CONFIG.get('host'),

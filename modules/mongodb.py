@@ -1,6 +1,6 @@
 from pymongo import MongoClient, errors
-from config import MONGODB_CONFIG
-from logger import logger
+from settings.config import MONGODB_CONFIG
+from libs.logger import logger
 
 try:
     mongodb_client = MongoClient(host=MONGODB_CONFIG.get('host'), port=MONGODB_CONFIG.get('port'))

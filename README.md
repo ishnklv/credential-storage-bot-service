@@ -30,3 +30,17 @@ Copy env variables from example
 ```bash
 $ cp example.env .env && vim .env
 ```
+
+### Running
+For Development mode:
+```bash
+$ python main.py
+```
+or
+```bash
+$ ./bin/run.sh
+```
+For CI/CD or production mode:
+```bash
+$ docker-compose up -d
+```

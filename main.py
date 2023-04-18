@@ -8,8 +8,8 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.dispatcher.filters import Text
 
 from utils import generate_password, is_valid_login
-from mongodb import collections
-from config import BOT_CONFIG
+from settings.config import BOT_CONFIG
+from models.credential_model import credential_model
 
 tracemalloc.start()
 
@@ -75,7 +75,7 @@ async def process_get_credential_by_service_name(message: types.Message, state: 
     async with state.proxy() as data:
         data['service_name'] = message.text
 
-    credential = collections.get('credentials').find_one(
+    credential = credential_model.find_one(
         {'telegram_user_id': message.from_user.id, 'service_name': data.get('service_name')})
 
     if not credential:
@@ -118,7 +118,7 @@ async def process_password_generate(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['password'] = password
 
-    credential = save_credential(data=data, user_id=message.from_user.id)
+    save_credential(data=data, user_id=message.from_user.id)
 
     await state.finish()
 
@@ -140,7 +140,7 @@ def save_credential(data, user_id):
         'telegram_user_id': user_id,
     }
 
-    collections.get('credentials').insert_one(credential)
+    credential_model.create(credential)
 
     return credential
 
