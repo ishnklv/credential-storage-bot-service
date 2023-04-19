@@ -10,7 +10,8 @@ from aiogram.dispatcher.filters import Text
 
 from utils import generate_password, is_valid_login
 from settings.config import BOT_CONFIG
-from models.credential_model import credential_model
+from repositories.credential_repository import credential_repository
+from entities.credential_entity import Credential
 
 tracemalloc.start()
 
@@ -82,7 +83,7 @@ async def list_credentials(message: types.Message):
         'telegram_user_id': user_id,
     }
 
-    items = credential_model.find(query)
+    items = credential_repository.find(query)
 
     message_text = ""
     for dictionary in items:
@@ -94,7 +95,7 @@ async def list_credentials(message: types.Message):
 
     await message.answer(message_text)
 
-    count = credential_model.count(query)
+    count = credential_repository.count(query)
 
     await message.answer(f"Counts: {count}")
 
@@ -104,7 +105,7 @@ async def process_get_credential_by_service_name(message: types.Message, state: 
     async with state.proxy() as data:
         data['service_name'] = message.text
 
-    credential = credential_model.find_one(
+    credential = credential_repository.find_one(
         {'telegram_user_id': message.from_user.id, 'service_name': data.get('service_name')})
 
     if not credential:
@@ -146,13 +147,13 @@ async def process_password_generate(message: types.Message, state: FSMContext):
 
     async with state.proxy() as data:
         data['password'] = password
+        data['password_is_generated'] = True
 
-    save_credential(data=data, user_id=message.from_user.id)
+    credential = save_credential(data=data, user_id=message.from_user.id)
 
     await state.finish()
 
-    await message.answer("Credential saved:\n" + f"Service name: {data['service_name']}\n" +
-                         f"Login: {data['login']}\n" + f"Password: {password}")
+    await message.answer(credential.display())
 
 
 @dp.message_handler(Text(equals="Enter"), state=CreateCredentialForm.waiting_for_password_type)
@@ -161,33 +162,30 @@ async def process_password_enter(message: types.Message):
     await message.answer("Enter password:")
 
 
-def save_credential(data, user_id):
-    credential = {
-        'service_name': data['service_name'],
-        'login': data['login'],
-        'password': data['password'],
-        'telegram_user_id': user_id,
-        'is_deleted': False,
-        'created_at': datetime.datetime.now(),
-        'updated_at': datetime.datetime.now(),
-    }
-
-    credential_model.create(credential)
-
-    return credential
-
-
 @dp.message_handler(state=CreateCredentialForm.waiting_for_password)
 async def process_password(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['password'] = message.text
+        data['password_is_generated'] = False
 
-    save_credential(data=data, user_id=message.from_user.id)
+    credential = save_credential(data=data, user_id=message.from_user.id)
 
     await state.finish()
 
-    await message.answer("Credential saved:\n" + f"Service name: {data['service_name']}\n" +
-                         f"Login: {data['login']}\n" + f"Password: {message.text}")
+    await message.answer(credential.display())
+
+
+def save_credential(data, user_id):
+    credential = Credential({
+        'service_name': data['service_name'],
+        'login': data['login'],
+        'password': data['password'],
+        'telegram_user_id': user_id,
+    })
+
+    credential_repository.create(credential.to_document())
+
+    return credential
 
 
 if __name__ == '__main__':

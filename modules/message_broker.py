@@ -1,14 +1,7 @@
 import json
-from redis import Redis
 
-from settings.config import REDIS_CONFIG, MESSAGE_BROKER_CONFIG
-
-redis_client = Redis(
-    host=REDIS_CONFIG.get('host'),
-    port=REDIS_CONFIG.get('port'),
-    decode_responses=REDIS_CONFIG.get('decode_response'),
-    db=REDIS_CONFIG.get('db')
-)
+from settings.config import MESSAGE_BROKER_CONFIG
+from redis_client import redis_client
 
 
 class Producer:

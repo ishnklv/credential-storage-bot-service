@@ -2,4 +2,4 @@ from modules.mongodb import collections
 from libs.orm import Orm
 
 
-credential_model: Orm = Orm(collections.get('credentials'))
+user_repository: Orm = Orm(collections.get('users'))

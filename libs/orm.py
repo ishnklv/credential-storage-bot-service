@@ -8,7 +8,7 @@ class Orm:
         else:
             self._collection = collection
 
-    def create(self, data: dict):
+    def create(self, data):
         document = self._collection.insert_one(data)
 
         return document.inserted_id
