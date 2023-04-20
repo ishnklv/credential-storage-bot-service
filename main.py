@@ -1,5 +1,5 @@
-from src.modules.bot import executor, dp
+from src.modules.bot import launch
 
 
 if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True)
+    launch()
