@@ -1,7 +1,7 @@
 import json
 
 from src.settings.config import MESSAGE_BROKER_CONFIG
-from redis_client import redis_client
+from src.storages.redis_client import redis_client
 
 class RedisProducer:
     def __init__(self):
