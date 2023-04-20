@@ -186,3 +186,7 @@ def save_credential(data, user_id):
     credential_repository.create(credential.to_document())
 
     return credential
+
+
+def launch():
+    executor.start_polling(dp, skip_updates=True)
