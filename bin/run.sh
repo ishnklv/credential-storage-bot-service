@@ -1,7 +1,8 @@
 #!/bin/sh
 
-MONGODB_HOST="localhost"
-MONGODB_PORT="27017"
+if [ -f .env ]; then
+  source .env
+fi
 
 if nc -w 1 -z $MONGODB_HOST $MONGODB_PORT; then
   echo "MongoDB is active"
