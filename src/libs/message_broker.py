@@ -1,10 +1,9 @@
 import json
 
-from settings.config import MESSAGE_BROKER_CONFIG
+from src.settings.config import MESSAGE_BROKER_CONFIG
 from redis_client import redis_client
 
-
-class Producer:
+class RedisProducer:
     def __init__(self):
         self.redis = redis_client
 
@@ -15,7 +14,7 @@ class Producer:
         self.redis.publish(MESSAGE_BROKER_CONFIG.get('CHANNEL_NAME'), data)
 
 
-class Consumer:
+class RedisConsumer:
     def __init__(self):
         self.redis = redis_client
         self.publication = redis_client.pubsub()
